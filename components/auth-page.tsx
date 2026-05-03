@@ -1,10 +1,7 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
-import { useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
-import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
-import type { ClerkError } from "@clerk/shared/error";
+import { AuthDivider } from "@/components/auth-divider";
+import { FloatingPaths } from "@/components/floating-paths";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,10 +9,12 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { AuthDivider } from "@/components/auth-divider";
-import { FloatingPaths } from "@/components/floating-paths";
-import { ChevronLeftIcon, AtSignIcon } from "lucide-react";
-import Image from "next/image";
+import { useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import type { ClerkError } from "@clerk/shared/error";
+import { AtSignIcon, ChevronLeftIcon } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 function formatClerkError(error: ClerkError | null): string {
   if (!error) return "";

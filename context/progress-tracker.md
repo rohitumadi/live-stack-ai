@@ -27,6 +27,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - Project dialogs (mock-only): Create (name + live slug preview), Rename (prefilled name, current name in description, autofocus, Enter submits), Delete (destructive confirm, no input).
 - `useProjectDialogs` hook (`hooks/use-project-dialogs.ts`): dialog state, form fields, and loading simulation; wired from editor home and sidebar (New Project, rename, delete).
 - Sidebar: rename/delete actions only on owned projects; hidden on shared/collaborator rows; backdrop closes sidebar on outside tap with stronger scrim and backdrop blur on narrow viewports (`components/editor/project-sidebar.tsx`).
+- Prisma: added `Project` + `ProjectCollaborator` models (`prisma/models/project.prisma`) with status enum, relations, unique constraint, and indexes; added cached Prisma singleton (`lib/prisma.ts`) with `prisma+postgres://` Accelerate branching vs direct `@prisma/adapter-pg`; created and applied initial migration and generated Prisma client.
 
 ## Next Up
 
