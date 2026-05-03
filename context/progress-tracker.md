@@ -4,32 +4,55 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Not started
+- Implementation
 
 ## Current Goal
 
-- Define the immediate implementation goal here.
+- Build editor chrome: top navbar and left project sidebar shell (spec: `02-editor.md`)
 
 ## Completed
 
-- None yet.
+- Initialized shadcn UI and added core components (button, tabs, input, textarea, select, badge, card, alert, tooltip, popover, dropdown‑menu, dialog, drawer, progress, skeleton, avatar, scroll‑area)
+- Created `lib/utils.ts` with `cn` helper for Tailwind class merging
+- Added `tailwind.config.ts` with dark‑mode support and custom color mappings to UI‑context variables
+- Updated `app/globals.css` with CSS custom properties for the dark theme and set the `dark` class as default
+- Design system and UI primitives complete
 
 ## In Progress
 
-- Design system and UI primitives (shadcn ui components, utils)
+### 02-editor — Editor Chrome Shell
+
+- [x] `components/editor/editor-navbar.tsx` — fixed-height top navbar with sidebar toggle (`PanelLeftOpen` / `PanelLeftClose`) and empty right section
+- [x] `components/editor/project-sidebar.tsx` — floating overlay sidebar (slides in from left, does NOT push content), with Projects title, close button, My Projects / Shared tabs, empty placeholder states, and full-width New Project button
+- [x] Dialog pattern documented: use existing `globals.css` color tokens; supports title, description, and footer actions (no concrete dialogs built yet)
+- [x] Wired components into `app/page.tsx` for verification
+
+### Checklist (from spec)
+
+- [x] New components compile without TypeScript errors
+- [x] No lint errors
+- [x] Dialog pattern is ready for future use
 
 ## Next Up
 
-- Add the next planned feature unit here.
+- Build the actual editor canvas area (subsequent spec chapter)
+- Wire the New Project button to open a New Project dialog
 
 ## Open Questions
 
-- Add unresolved product or implementation questions here.
+- Toast component is deprecated; consider using an alternative such as `sonner` for notifications
 
 ## Architecture Decisions
 
-- Add decisions that affect the system design or data model.
+- Adopted shadcn UI as the component library per project guidelines; all components live under `components/ui/`
+- Chose CSS custom properties for theming to align with the UI‑context specification
+- Editor-specific components live under `components/editor/` separated from generic UI primitives
+- Sidebar floats above canvas (overlay pattern) so it never shifts page layout
 
 ## Session Notes
 
-- Add context needed to resume work in the next session.
+- Added required dependencies (`shadcn`, `lucide-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css`)
+- Ensured the build passes with the new Tailwind configuration
+- Created `components/editor/` directory with `editor-navbar.tsx` and `project-sidebar.tsx`
+- Switched primary font to Roboto Slab and updated `context/ui-context.md` and `globals.css` accordingly
+- Cleaned up unused Geist font references

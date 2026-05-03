@@ -6,36 +6,30 @@ Dark only. No light mode. The visual language is a dark technical workspace — 
 
 All colors are defined as CSS custom properties in `globals.css` and mapped to Tailwind tokens via `@theme inline`. Components must use these tokens — no hardcoded hex values or raw Tailwind color classes like `zinc-*`.
 
-| Role             | CSS Variable           | Hex / Value               |
-| ---------------- | ---------------------- | ------------------------- |
-| Page background  | `--bg-base`            | `#080809`                 |
-| Surface          | `--bg-surface`         | `#111114`                 |
-| Elevated surface | `--bg-elevated`        | `#18181c`                 |
-| Subtle surface   | `--bg-subtle`          | `#1e1e23`                 |
-| Default border   | `--border-default`     | `#2a2a30`                 |
-| Subtle border    | `--border-subtle`      | `#3a3a42`                 |
-| Primary text     | `--text-primary`       | `#f0f0f4`                 |
-| Secondary text   | `--text-secondary`     | `#c0c0cc`                 |
-| Muted text       | `--text-muted`         | `#808090`                 |
-| Faint text       | `--text-faint`         | `#505060`                 |
-| Brand accent     | `--accent-primary`     | `#00c8d4` (cyan)          |
-| Brand dim        | `--accent-primary-dim` | `rgba(0, 200, 212, 0.12)` |
-| AI accent        | `--accent-ai`          | `#6457f9` (indigo-purple) |
-| AI text          | `--accent-ai-text`     | `#8b82ff`                 |
-| Error            | `--state-error`        | `#ff4d4f`                 |
-| Success          | `--state-success`      | `#34d399`                 |
-| Warning          | `--state-warning`      | `#fbbf24`                 |
+| Role                 | CSS Variable         | OKLCH Value                  |
+| -------------------- | -------------------- | ---------------------------- |
+| Page background      | `--background`       | `oklch(0.145 0 0)`           |
+| Foreground text      | `--foreground`       | `oklch(0.985 0 0)`           |
+| Card background      | `--card`             | `oklch(0.205 0 0)`           |
+| Card text            | `--card-foreground`  | `oklch(0.985 0 0)`           |
+| Primary accent       | `--primary`          | `oklch(0.47 0.157 37.304)`   |
+| Secondary background | `--secondary`        | `oklch(0.274 0.006 286.033)` |
+| Muted background     | `--muted`            | `oklch(0.269 0 0)`           |
+| Border               | `--border`           | `oklch(1 0 0 / 10%)`         |
+| Muted text           | `--muted-foreground` | `oklch(0.708 0 0)`           |
+| Accent background    | `--accent`           | `oklch(0.269 0 0)`           |
+| Destructive          | `--destructive`      | `oklch(0.704 0.191 22.216)`  |
 
-Tailwind utility names map to these variables. Use `bg-base`, `bg-surface`, `text-copy-primary`, `text-copy-muted`, `border-surface-border`, `text-brand`, `bg-accent-dim`, etc.
+Tailwind utility names map to these variables. Use `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, `border-border`, `bg-primary`, `bg-accent`, etc.
 
 ## Typography
 
-| Role      | Font       | CSS Variable        |
-| --------- | ---------- | ------------------- |
-| UI text   | Geist Sans | `--font-geist-sans` |
-| Code/mono | Geist Mono | `--font-geist-mono` |
+| Role      | Font        | CSS Variable         |
+| --------- | ----------- | -------------------- |
+| UI text   | Roboto Slab | `--font-roboto-slab` |
+| Code/mono | System Mono | `ui-monospace`       |
 
-Both fonts are loaded via `next/font/google` and applied as CSS variables on the `<html>` element. The base `body` uses Geist Sans with `antialiased`.
+The primary font is loaded via `next/font/google` and applied as a CSS variable on the `<html>` element. Both `--font-sans` and `--font-heading` are mapped to Roboto Slab in `globals.css`.
 
 ## Border Radius
 
