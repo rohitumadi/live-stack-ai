@@ -8,7 +8,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Implement Clerk Authentication (spec: `03-auth.md`)
+- Build the editor canvas area and persistence (future specs)
 
 ## Completed
 
@@ -23,11 +23,14 @@ Update this file whenever the current phase, active feature, or implementation s
 - Added root `proxy.ts` (`clerkMiddleware`, Next.js 16 proxy convention) to protect routes by default; sign-in, sign-up, and `/sso-callback` are public so OAuth can complete before `auth.protect()` runs
 - Placed Clerk `UserButton` within the editor navbar.
 - Root page `/` redirects authenticated users to `/editor` and unauthenticated users to `/sign-in`.
+- Editor `/editor` home screen: heading, description, and **New Project** with Plus icon (minimal layout, no cards).
+- Project dialogs (mock-only): Create (name + live slug preview), Rename (prefilled name, current name in description, autofocus, Enter submits), Delete (destructive confirm, no input).
+- `useProjectDialogs` hook (`hooks/use-project-dialogs.ts`): dialog state, form fields, and loading simulation; wired from editor home and sidebar (New Project, rename, delete).
+- Sidebar: rename/delete actions only on owned projects; hidden on shared/collaborator rows; backdrop closes sidebar on outside tap with stronger scrim and backdrop blur on narrow viewports (`components/editor/project-sidebar.tsx`).
 
 ## Next Up
 
 - Build the actual editor canvas area (subsequent spec chapter)
-- Wire the New Project button to open a New Project dialog
 
 ## Open Questions
 

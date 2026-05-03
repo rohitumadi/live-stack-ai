@@ -15,6 +15,7 @@ import {
 import { AuthDivider } from "@/components/auth-divider";
 import { FloatingPaths } from "@/components/floating-paths";
 import { ChevronLeftIcon, AtSignIcon } from "lucide-react";
+import Image from "next/image";
 
 function formatClerkError(error: ClerkError | null): string {
   if (!error) return "";
@@ -162,7 +163,7 @@ export function AuthPage() {
     <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
       <div className="relative hidden h-full flex-col border-r bg-secondary p-10 lg:flex dark:bg-secondary/20">
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-background" />
-        <Logo className="mr-auto h-4.5" />
+        <h1 className="text-2xl font-bold ">Live Stack AI</h1>
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-xl">
