@@ -8,7 +8,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Build editor chrome: top navbar and left project sidebar shell (spec: `02-editor.md`)
+- Implement Clerk Authentication (spec: `03-auth.md`)
 
 ## Completed
 
@@ -17,21 +17,12 @@ Update this file whenever the current phase, active feature, or implementation s
 - Added `tailwind.config.ts` with dark‑mode support and custom color mappings to UI‑context variables
 - Updated `app/globals.css` with CSS custom properties for the dark theme and set the `dark` class as default
 - Design system and UI primitives complete
-
-## In Progress
-
-### 02-editor — Editor Chrome Shell
-
-- [x] `components/editor/editor-navbar.tsx` — fixed-height top navbar with sidebar toggle (`PanelLeftOpen` / `PanelLeftClose`) and empty right section
-- [x] `components/editor/project-sidebar.tsx` — floating overlay sidebar (slides in from left, does NOT push content), with Projects title, close button, My Projects / Shared tabs, empty placeholder states, and full-width New Project button
-- [x] Dialog pattern documented: use existing `globals.css` color tokens; supports title, description, and footer actions (no concrete dialogs built yet)
-- [x] Wired components into `app/page.tsx` for verification
-
-### Checklist (from spec)
-
-- [x] New components compile without TypeScript errors
-- [x] No lint errors
-- [x] Dialog pattern is ready for future use
+- Built editor chrome: top navbar and left project sidebar shell (`components/editor/editor-navbar.tsx`, `components/editor/project-sidebar.tsx`)
+- Configured dialog pattern for future use
+- Implemented Authentication with Clerk: wrap root layout with ClerkProvider, installed custom styled sign-in and sign-up pages using `@efferd/auth-5` using CSS variables
+- Added root `proxy.ts` (`clerkMiddleware`, Next.js 16 proxy convention) to protect routes by default; sign-in, sign-up, and `/sso-callback` are public so OAuth can complete before `auth.protect()` runs
+- Placed Clerk `UserButton` within the editor navbar.
+- Root page `/` redirects authenticated users to `/editor` and unauthenticated users to `/sign-in`.
 
 ## Next Up
 
@@ -51,6 +42,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
+- Updated `components/auth-page.tsx` for `@clerk/nextjs` v7: email OTP uses `SignInFuture` / `SignUpFuture` (`emailCode`, `verifications`, `finalize`); OAuth uses `clerk.client.signIn.authenticateWithRedirect` with callback `/sso-callback` and post-login `/editor`; readiness uses `fetchStatus === 'idle'` plus `clerk.loaded`.
 - Added required dependencies (`shadcn`, `lucide-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `tw-animate-css`)
 - Ensured the build passes with the new Tailwind configuration
 - Created `components/editor/` directory with `editor-navbar.tsx` and `project-sidebar.tsx`
