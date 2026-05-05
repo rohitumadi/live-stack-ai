@@ -28,6 +28,19 @@ Update this file whenever the current phase, active feature, or implementation s
 - `useProjectDialogs` hook (`hooks/use-project-dialogs.ts`): dialog state, form fields, and loading simulation; wired from editor home and sidebar (New Project, rename, delete).
 - Sidebar: rename/delete actions only on owned projects; hidden on shared/collaborator rows; backdrop closes sidebar on outside tap with stronger scrim and backdrop blur on narrow viewports (`components/editor/project-sidebar.tsx`).
 - Prisma: added `Project` + `ProjectCollaborator` models (`prisma/models/project.prisma`) with status enum, relations, unique constraint, and indexes; added cached Prisma singleton (`lib/prisma.ts`) with `prisma+postgres://` Accelerate branching vs direct `@prisma/adapter-pg`; created and applied initial migration and generated Prisma client.
+- Project APIs (backend-only): added authenticated REST routes for projects — `GET /api/projects` (list owner projects), `POST /api/projects` (create w/ default `Untitled Project`), `PATCH /api/projects/[projectId]` (owner-only rename), `DELETE /api/projects/[projectId]` (owner-only delete) with correct `401`/`403` responses; `npm run build` passes.
+- **Wired editor home to real project API**:
+  - Created `lib/project-data.ts` helper to fetch owned/shared projects server-side
+  - Created `types/project.ts` with `Project` and `ProjectWithRole` types
+  - Converted `app/editor/page.tsx` to server component that fetches real data and passes to `EditorHome`
+  - Created `components/editor/editor-home.tsx` client component that manages sidebar and dialog state
+  - Updated `useProjectDialogs` hook to accept initial projects and call real API endpoints (`POST`, `PATCH`, `DELETE`)
+  - Hook implements: create dialog → POST /api/projects → navigate to workspace; rename dialog → PATCH /api/projects/[id] → refresh; delete dialog → DELETE /api/projects/[id] → refresh/redirect
+  - Updated `components/editor/project-sidebar.tsx` to use real `ProjectWithRole` data; projects are now links to `/editor/[projectId]`
+  - Updated `components/editor/project-dialogs.tsx` to display error messages and use real project types
+  - Created `app/editor/[projectId]/page.tsx` workspace page (placeholder for editor canvas)
+  - Sidebar uses real project data, create navigates to workspace, rename/delete update correctly via API
+  - Build passes with no errors
 
 ## Next Up
 
@@ -52,3 +65,4 @@ Update this file whenever the current phase, active feature, or implementation s
 - Created `components/editor/` directory with `editor-navbar.tsx` and `project-sidebar.tsx`
 - Switched primary font to Roboto Slab and updated `context/ui-context.md` and `globals.css` accordingly
 - Cleaned up unused Geist font references
+- **Wired editor home to real project API**: refactored mock data to real server-side data fetching, created `lib/project-data.ts` helper, updated hook to make real API calls (POST/PATCH/DELETE), created workspace page `/editor/[projectId]`, updated sidebar to use real projects with links to workspace, dialogs now show errors from API

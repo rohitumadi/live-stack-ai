@@ -1,6 +1,7 @@
 "use client";
 
 import { MoreHorizontal, Plus, X } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -11,16 +12,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import type { MockProject } from "@/hooks/use-project-dialogs";
+import type { ProjectWithRole } from "@/types/project";
 
 interface ProjectSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  ownedProjects: MockProject[];
-  sharedProjects: MockProject[];
+  ownedProjects: ProjectWithRole[];
+  sharedProjects: ProjectWithRole[];
   onNewProject: () => void;
-  onRenameProject: (project: MockProject) => void;
-  onDeleteProject: (project: MockProject) => void;
+  onRenameProject: (project: ProjectWithRole) => void;
+  onDeleteProject: (project: ProjectWithRole) => void;
 }
 
 export function ProjectSidebar({
@@ -156,40 +157,47 @@ function ProjectRow({
   onRename,
   onDelete,
 }: {
-  project: MockProject;
+  project: ProjectWithRole;
   showActions: boolean;
   onRename?: () => void;
   onDelete?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-1 rounded-xl px-2 py-2 text-left hover:bg-accent/50">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">
-          {project.name}
-        </p>
-        <p className="truncate font-mono text-xs text-muted-foreground">
-          {project.slug}
-        </p>
+    <Link
+      href={`/editor/${project.id}`}
+      className="block rounded-xl transition-colors hover:bg-accent/50"
+    >
+      <div className="flex items-center gap-1 px-2 py-2 text-left">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">
+            {project.name}
+          </p>
+          <p className="truncate font-mono text-xs text-muted-foreground">
+            {project.id}
+          </p>
+        </div>
+        {showActions && onRename && onDelete ? (
+          <div onClick={(e) => e.preventDefault()}>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "icon-xs" }),
+                  "shrink-0 text-muted-foreground hover:text-foreground",
+                )}
+                aria-label={`Actions for ${project.name}`}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-36">
+                <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onClick={onDelete}>
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : null}
       </div>
-      {showActions && onRename && onDelete ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "icon-xs" }),
-              "shrink-0 text-muted-foreground hover:text-foreground",
-            )}
-            aria-label={`Actions for ${project.name}`}
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-36">
-            <DropdownMenuItem onClick={onRename}>Rename</DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onClick={onDelete}>
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : null}
-    </div>
+    </Link>
   );
 }

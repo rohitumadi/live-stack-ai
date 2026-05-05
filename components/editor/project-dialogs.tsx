@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,17 +11,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { MockProject, ProjectDialogMode } from "@/hooks/use-project-dialogs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { ProjectDialogMode } from "@/hooks/use-project-dialogs";
+import type { ProjectWithRole } from "@/types/project";
 
 interface ProjectDialogsProps {
   activeDialog: ProjectDialogMode;
-  targetProject: MockProject | null;
+  targetProject: ProjectWithRole | null;
   createName: string;
   onCreateNameChange: (value: string) => void;
   createSlugPreview: string;
   renameName: string;
   onRenameNameChange: (value: string) => void;
   loading: boolean;
+  error: string | null;
   onOpenChange: (open: boolean) => void;
   onSubmitCreate: () => void;
   onSubmitRename: () => void;
@@ -36,6 +40,7 @@ export function ProjectDialogs({
   renameName,
   onRenameNameChange,
   loading,
+  error,
   onOpenChange,
   onSubmitCreate,
   onSubmitRename,
@@ -43,10 +48,7 @@ export function ProjectDialogs({
 }: ProjectDialogsProps) {
   return (
     <>
-      <Dialog
-        open={activeDialog === "create"}
-        onOpenChange={onOpenChange}
-      >
+      <Dialog open={activeDialog === "create"} onOpenChange={onOpenChange}>
         <DialogContent className="rounded-3xl sm:max-w-md" showCloseButton>
           <DialogHeader>
             <DialogTitle>New project</DialogTitle>
@@ -54,6 +56,12 @@ export function ProjectDialogs({
               Choose a display name. You can change it later.
             </DialogDescription>
           </DialogHeader>
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="grid gap-3 py-1">
             <div className="grid gap-2">
               <label
@@ -109,6 +117,12 @@ export function ProjectDialogs({
               </span>
             </DialogDescription>
           </DialogHeader>
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <form
             className="grid gap-3 py-1"
             onSubmit={(e) => {
@@ -140,10 +154,7 @@ export function ProjectDialogs({
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={loading || !renameName.trim()}
-              >
+              <Button type="submit" disabled={loading || !renameName.trim()}>
                 {loading ? "Saving…" : "Save"}
               </Button>
             </DialogFooter>
@@ -163,6 +174,12 @@ export function ProjectDialogs({
               from your workspace. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <DialogFooter className="border-border bg-transparent sm:justify-end">
             <Button
               type="button"
