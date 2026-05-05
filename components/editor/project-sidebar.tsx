@@ -17,6 +17,7 @@ import type { ProjectWithRole } from "@/types/project";
 interface ProjectSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  currentProjectId?: string;
   ownedProjects: ProjectWithRole[];
   sharedProjects: ProjectWithRole[];
   onNewProject: () => void;
@@ -27,6 +28,7 @@ interface ProjectSidebarProps {
 export function ProjectSidebar({
   isOpen,
   onClose,
+  currentProjectId,
   ownedProjects,
   sharedProjects,
   onNewProject,
@@ -103,6 +105,7 @@ export function ProjectSidebar({
                   <li key={project.id}>
                     <ProjectRow
                       project={project}
+                      isCurrent={project.id === currentProjectId}
                       showActions
                       onRename={() => onRenameProject(project)}
                       onDelete={() => onDeleteProject(project)}
@@ -123,7 +126,11 @@ export function ProjectSidebar({
               <ul className="flex flex-col gap-1">
                 {sharedProjects.map((project) => (
                   <li key={project.id}>
-                    <ProjectRow project={project} showActions={false} />
+                    <ProjectRow
+                      project={project}
+                      isCurrent={project.id === currentProjectId}
+                      showActions={false}
+                    />
                   </li>
                 ))}
               </ul>
@@ -153,11 +160,13 @@ function EmptyPlaceholder({ message }: { message: string }) {
 
 function ProjectRow({
   project,
+  isCurrent = false,
   showActions,
   onRename,
   onDelete,
 }: {
   project: ProjectWithRole;
+  isCurrent?: boolean;
   showActions: boolean;
   onRename?: () => void;
   onDelete?: () => void;
@@ -165,7 +174,11 @@ function ProjectRow({
   return (
     <Link
       href={`/editor/${project.id}`}
-      className="block rounded-xl transition-colors hover:bg-accent/50"
+      aria-current={isCurrent ? "page" : undefined}
+      className={cn(
+        "block rounded-xl transition-colors hover:bg-accent/50",
+        isCurrent && "bg-accent text-foreground",
+      )}
     >
       <div className="flex items-center gap-1 px-2 py-2 text-left">
         <div className="min-w-0 flex-1">

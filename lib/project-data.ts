@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentProjectIdentity } from "@/lib/project-access";
 
 export interface ProjectData {
   id: string;
@@ -17,7 +17,8 @@ export interface ProjectData {
  * Returns { ownedProjects, sharedProjects }.
  */
 export async function fetchUserProjects() {
-  const { userId } = await auth();
+  const { userId, primaryEmail } = await getCurrentProjectIdentity();
+  const collaboratorEmail = primaryEmail;
 
   if (!userId) {
     return { ownedProjects: [], sharedProjects: [] };
@@ -39,30 +40,32 @@ export async function fetchUserProjects() {
     },
   });
 
-  // Fetch shared projects (where user is a collaborator)
-  const sharedProjects = await prisma.project.findMany({
-    where: {
-      collaborators: {
-        some: {
-          collaboratorEmail: {
-            // This would require the user's email, which we'd need from Clerk
-            // For now, we'll return an empty array since we don't have user email readily available
+  const sharedProjects = collaboratorEmail
+    ? await prisma.project.findMany({
+        where: {
+          ownerId: { not: userId },
+          collaborators: {
+            some: {
+              collaboratorEmail: {
+                equals: collaboratorEmail,
+                mode: "insensitive",
+              },
+            },
           },
         },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      ownerId: true,
-      description: true,
-      status: true,
-      canvasJsonPath: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          ownerId: true,
+          description: true,
+          status: true,
+          canvasJsonPath: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })
+    : [];
 
   return { ownedProjects, sharedProjects };
 }

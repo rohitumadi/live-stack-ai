@@ -8,7 +8,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Build the editor canvas area and persistence (future specs)
+- Build the actual editor canvas area (subsequent spec chapter)
 
 ## Completed
 
@@ -41,6 +41,22 @@ Update this file whenever the current phase, active feature, or implementation s
   - Created `app/editor/[projectId]/page.tsx` workspace page (placeholder for editor canvas)
   - Sidebar uses real project data, create navigates to workspace, rename/delete update correctly via API
   - Build passes with no errors
+- **Built `/editor/[roomId]` workspace shell**:
+  - Added `lib/project-access.ts` for Clerk identity lookup and owner/collaborator project access checks
+  - Added `components/editor/access-denied.tsx` for missing or unauthorized projects
+  - Replaced the placeholder workspace with a server-rendered access gate and client workspace shell
+  - Workspace navbar shows the current project name with share and AI sidebar controls
+  - Sidebar highlights the current room and the central canvas/right AI sidebar render placeholders only
+  - `npm run build` passes
+- **Implemented share dialog and collaborator management**:
+  - Added `components/editor/share-dialog.tsx` and wired desktop/mobile Share buttons in the workspace shell
+  - Owners can invite collaborators by email, view enriched collaborators, remove collaborators, and copy the project link with `Copied!` feedback
+  - Collaborators can open the dialog and view the collaborator list without invite/remove controls
+  - Added collaborator API routes: `GET`/`POST /api/projects/[projectId]/collaborators` and `DELETE /api/projects/[projectId]/collaborators/[collaboratorId]`
+  - Invite/remove actions enforce owner-only access server-side; list access is allowed for owners and project collaborators
+  - Added Clerk Backend API enrichment for collaborator display names and avatar images with email-only fallback
+  - Shared-project lookups normalize Clerk primary emails to match email-based collaborator records
+  - `npm run build` passes
 
 ## Next Up
 
@@ -66,3 +82,5 @@ Update this file whenever the current phase, active feature, or implementation s
 - Switched primary font to Roboto Slab and updated `context/ui-context.md` and `globals.css` accordingly
 - Cleaned up unused Geist font references
 - **Wired editor home to real project API**: refactored mock data to real server-side data fetching, created `lib/project-data.ts` helper, updated hook to make real API calls (POST/PATCH/DELETE), created workspace page `/editor/[projectId]`, updated sidebar to use real projects with links to workspace, dialogs now show errors from API
+- Built `/editor/[roomId]` as a guarded server component with workspace chrome only; no canvas, Liveblocks, AI chat, or sharing behavior added.
+- Built the share dialog feature from `context/feture-specs/09-share-dialog.md`; collaborator membership remains email-based in Prisma and Clerk is used only for profile enrichment.
