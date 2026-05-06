@@ -2,6 +2,7 @@
 
 import { Bot, Share2 } from "lucide-react";
 import { useState } from "react";
+import { BaseCanvas } from "@/components/editor/base-canvas";
 import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { ProjectDialogs } from "@/components/editor/project-dialogs";
 import { ProjectSidebar } from "@/components/editor/project-sidebar";
@@ -76,17 +77,7 @@ export function EditorWorkspaceShell({
       />
       <main className="flex h-full pt-12">
         <section className="relative min-w-0 flex-1 bg-background">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--muted)_1px,transparent_1px)] [background-size:32px_32px]" />
-          <div className="relative flex h-full items-center justify-center px-6 text-center">
-            <div className="max-w-sm space-y-2">
-              <h1 className="font-heading text-lg font-medium text-foreground">
-                Canvas workspace
-              </h1>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Collaborative canvas will render here in the next feature unit.
-              </p>
-            </div>
-          </div>
+          <BaseCanvas roomId={project.id} />
         </section>
         <aside
           className={cn(

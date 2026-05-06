@@ -8,7 +8,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Build the actual editor canvas area (subsequent spec chapter)
+- Prepare the next focused canvas feature unit
 
 ## Completed
 
@@ -57,10 +57,30 @@ Update this file whenever the current phase, active feature, or implementation s
   - Added Clerk Backend API enrichment for collaborator display names and avatar images with email-only fallback
   - Shared-project lookups normalize Clerk primary emails to match email-based collaborator records
   - `npm run build` passes
+- **Set up Liveblocks collaboration infrastructure**:
+  - Updated `liveblocks.config.ts` with typed presence (`cursor`, `isThinking`) and user metadata (`name`, `displayName`, optional avatar URLs, `color`, `cursorColor`)
+  - Added cached Liveblocks Node client and deterministic cursor color helper in `lib/liveblocks.ts`
+  - Added `POST /api/liveblocks-auth` to require Clerk auth, parse the requested project room, verify project access, ensure the Liveblocks room exists, and issue a room-scoped session token
+  - Added the missing `@liveblocks/node` dependency required by the Liveblocks server SDK
+  - `npm run build` passes
+- **Replaced the workspace canvas placeholder with the base collaborative canvas**:
+  - Kept `app/editor/[roomId]/page.tsx` server-rendered and mounted a focused client canvas inside the existing workspace shell
+  - Added `components/editor/base-canvas.tsx` with `LiveblocksProvider`, `RoomProvider`, `ClientSideSuspense`, initial presence, and a connection error fallback
+  - Wired `@liveblocks/react-flow` `useLiveblocksFlow` to React Flow with suspense, empty initial nodes/edges, synced change handlers, loose connections, `fitView`, `MiniMap`, cursors, and dot-pattern background
+  - Added shared canvas contracts in `types/canvas.ts` for node data (`label`, `color`, `shape`) plus `canvasNode` and `canvasEdge` types
+  - Imported React Flow and Liveblocks canvas styles through `app/globals.css`
+  - `npm run build` passes
+- **Added the bottom shape panel for canvas node creation**:
+  - Added shared drag payload and node size types in `types/canvas.ts`
+  - Added a bottom-center floating shape toolbar with draggable Lucide icon buttons for rectangle, diamond, circle, pill, cylinder, and hexagon
+  - Added shape drag payloads with default sizes and drop handling that converts screen coordinates to React Flow canvas coordinates
+  - Created new collaborative `canvasNode` nodes through Liveblocks-backed React Flow node changes using empty labels, the default node color, dragged shape data, and IDs built from shape, timestamp, and counter
+  - Added a basic custom canvas node renderer that displays every shape as a bordered rectangle with centered label text
+  - `npm run build` passes
 
 ## Next Up
 
-- Build the actual editor canvas area (subsequent spec chapter)
+- Add the next canvas feature unit from the subsequent spec chapter
 
 ## Open Questions
 
@@ -84,3 +104,6 @@ Update this file whenever the current phase, active feature, or implementation s
 - **Wired editor home to real project API**: refactored mock data to real server-side data fetching, created `lib/project-data.ts` helper, updated hook to make real API calls (POST/PATCH/DELETE), created workspace page `/editor/[projectId]`, updated sidebar to use real projects with links to workspace, dialogs now show errors from API
 - Built `/editor/[roomId]` as a guarded server component with workspace chrome only; no canvas, Liveblocks, AI chat, or sharing behavior added.
 - Built the share dialog feature from `context/feture-specs/09-share-dialog.md`; collaborator membership remains email-based in Prisma and Clerk is used only for profile enrichment.
+- Built the Liveblocks setup feature from `context/feture-specs/10-liveblocks-setup.md`; the auth endpoint uses project IDs as room IDs and grants access-token permissions only after Clerk plus project membership checks.
+- Built the base canvas feature from `context/feture-specs/11-base-canvas.md`; first build attempt was blocked by sandboxed Google font fetching, then `npm run build` passed with network access.
+- Built the shape panel feature from `context/feture-specs/12-shape-panel.md`; first build attempt was blocked by sandboxed Google font fetching, then `npm run build` passed with network access.
