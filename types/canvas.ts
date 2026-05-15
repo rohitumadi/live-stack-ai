@@ -2,7 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 
 export const CANVAS_NODE_TYPE = "canvasNode";
 export const CANVAS_EDGE_TYPE = "canvasEdge";
-
+export type NodeShape = (typeof NODE_SHAPES)[number];
 export const NODE_SHAPES = [
   "rectangle",
   "diamond",
@@ -18,7 +18,17 @@ export interface CanvasNodeSize {
   width: number;
   height: number;
 }
-
+export const SHAPE_DEFAULTS: Record<
+  NodeShape,
+  { width: number; height: number }
+> = {
+  rectangle: { width: 160, height: 80 },
+  diamond: { width: 160, height: 120 },
+  circle: { width: 100, height: 100 },
+  pill: { width: 160, height: 72 },
+  cylinder: { width: 120, height: 100 },
+  hexagon: { width: 140, height: 120 },
+};
 export interface ShapeDragPayload {
   shape: CanvasNodeShape;
   size: CanvasNodeSize;

@@ -77,6 +77,21 @@ Update this file whenever the current phase, active feature, or implementation s
   - Created new collaborative `canvasNode` nodes through Liveblocks-backed React Flow node changes using empty labels, the default node color, dragged shape data, and IDs built from shape, timestamp, and counter
   - Added a basic custom canvas node renderer that displays every shape as a bordered rectangle with centered label text
   - `npm run build` passes
+- **Added resizing and inline label editing to canvas nodes**:
+  - Added minimum size constants (`MIN_NODE_SIZE`) to prevent nodes from being resized below 60×40 px
+  - Enhanced `CanvasNodeRenderer` with `useState` for edit mode and label tracking
+  - Selected nodes use React Flow `NodeResizer` controls so corner and edge resizing updates dimensions and top/left position correctly
+  - Double-click on any node's label area to enter inline edit mode
+  - Textarea appears over the label with placeholder text when empty, updates label as users type
+  - Label editing closes on blur or `Escape` key; `Ctrl+Enter` also commits changes
+  - Stopped pointer events on textarea to prevent canvas drag/pan during text editing
+  - Label edits now update only `node.data.label` through React Flow so nodes keep their existing position and size after editing
+  - All node updates (label, dimensions, and resize position adjustments) sync through collaborative canvas state
+  - `npm run build` passes
+- **Fixed current canvas editing issues**:
+  - Replaced the earlier label save path that rewrote whole nodes with incomplete position/dimension data
+  - Removed the custom resize listener implementation in favor of React Flow's production resize controls
+  - `npm run build` passes
 
 ## Next Up
 

@@ -5,6 +5,7 @@ import {
   useCallback,
   useMemo,
   useRef,
+  useState,
   type DragEvent,
   type ErrorInfo,
   type ReactNode,
@@ -18,10 +19,7 @@ import {
   RectangleHorizontal,
   type LucideIcon,
 } from "lucide-react";
-import {
-  Cursors,
-  useLiveblocksFlow,
-} from "@liveblocks/react-flow";
+import { Cursors, useLiveblocksFlow } from "@liveblocks/react-flow";
 import {
   ClientSideSuspense,
   LiveblocksProvider,
@@ -35,6 +33,7 @@ import {
   type NodeProps,
   type NodeTypes,
   MiniMap,
+  NodeResizer,
   Position,
   ReactFlow,
   ReactFlowProvider,
@@ -53,6 +52,8 @@ import {
 
 const SHAPE_DRAG_MIME_TYPE = "application/live-stack-shape";
 const DEFAULT_NODE_COLOR = NODE_COLORS[0].color;
+
+const MIN_NODE_SIZE = { width: 60, height: 40 };
 
 const SHAPE_DEFAULT_SIZES = {
   rectangle: { width: 168, height: 92 },
@@ -165,7 +166,7 @@ function SyncedCanvas() {
       ({
         [CANVAS_NODE_TYPE]: CanvasNodeRenderer,
       }) satisfies NodeTypes,
-    []
+    [],
   );
 
   const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
@@ -182,7 +183,7 @@ function SyncedCanvas() {
       event.preventDefault();
 
       const payload = parseShapeDragPayload(
-        event.dataTransfer.getData(SHAPE_DRAG_MIME_TYPE)
+        event.dataTransfer.getData(SHAPE_DRAG_MIME_TYPE),
       );
 
       if (!payload) {
@@ -211,7 +212,7 @@ function SyncedCanvas() {
 
       onNodesChange([{ type: "add", item: node }]);
     },
-    [onNodesChange, screenToFlowPosition]
+    [onNodesChange, screenToFlowPosition],
   );
 
   return (
@@ -273,7 +274,110 @@ function ShapePanel() {
             event.dataTransfer.effectAllowed = "copy";
             event.dataTransfer.setData(
               SHAPE_DRAG_MIME_TYPE,
-              JSON.stringify(payload)
+              JSON.stringify(payload),
+            );
+
+            const preview = document.createElement("div");
+            preview.style.width = `${SHAPE_DEFAULT_SIZES[shape].width}px`;
+            preview.style.height = `${SHAPE_DEFAULT_SIZES[shape].height}px`;
+            preview.style.position = "fixed";
+            preview.style.left = "-9999px";
+            preview.style.top = "-9999px";
+            preview.style.pointerEvents = "none";
+            preview.style.boxSizing = "border-box";
+
+            const svgShapes = ["diamond", "hexagon", "cylinder"];
+            if (svgShapes.includes(shape)) {
+              const svgNS = "http://www.w3.org/2000/svg";
+              const svg = document.createElementNS(svgNS, "svg");
+              svg.setAttribute("width", "100%");
+              svg.setAttribute("height", "100%");
+              svg.setAttribute("viewBox", "0 0 100 100");
+              svg.setAttribute("preserveAspectRatio", "none");
+              svg.style.backgroundColor = DEFAULT_NODE_COLOR;
+              svg.style.border = "1px solid var(--border)";
+              svg.style.boxSizing = "border-box";
+
+              if (shape === "diamond") {
+                const polygon = document.createElementNS(svgNS, "polygon");
+                polygon.setAttribute("points", "50,0 100,50 50,100 0,50");
+                polygon.setAttribute("fill", DEFAULT_NODE_COLOR);
+                polygon.setAttribute("stroke", "var(--border)");
+                polygon.setAttribute("stroke-width", "1");
+                svg.appendChild(polygon);
+              } else if (shape === "hexagon") {
+                const polygon = document.createElementNS(svgNS, "polygon");
+                polygon.setAttribute(
+                  "points",
+                  "25,0 75,0 100,50 75,100 25,100 0,50",
+                );
+                polygon.setAttribute("fill", DEFAULT_NODE_COLOR);
+                polygon.setAttribute("stroke", "var(--border)");
+                polygon.setAttribute("stroke-width", "1");
+                svg.appendChild(polygon);
+              } else if (shape === "cylinder") {
+                const topEllipse = document.createElementNS(svgNS, "ellipse");
+                topEllipse.setAttribute("cx", "50");
+                topEllipse.setAttribute("cy", "20");
+                topEllipse.setAttribute("rx", "50");
+                topEllipse.setAttribute("ry", "20");
+                topEllipse.setAttribute("fill", DEFAULT_NODE_COLOR);
+                topEllipse.setAttribute("stroke", "var(--border)");
+                topEllipse.setAttribute("stroke-width", "1");
+                svg.appendChild(topEllipse);
+
+                const rect = document.createElementNS(svgNS, "rect");
+                rect.setAttribute("x", "0");
+                rect.setAttribute("y", "20");
+                rect.setAttribute("width", "100");
+                rect.setAttribute("height", "60");
+                rect.setAttribute("fill", DEFAULT_NODE_COLOR);
+                rect.setAttribute("stroke", "var(--border)");
+                rect.setAttribute("stroke-width", "1");
+                svg.appendChild(rect);
+
+                const bottomEllipse = document.createElementNS(
+                  svgNS,
+                  "ellipse",
+                );
+                bottomEllipse.setAttribute("cx", "50");
+                bottomEllipse.setAttribute("cy", "80");
+                bottomEllipse.setAttribute("rx", "50");
+                bottomEllipse.setAttribute("ry", "20");
+                bottomEllipse.setAttribute("fill", DEFAULT_NODE_COLOR);
+                bottomEllipse.setAttribute("stroke", "var(--border)");
+                bottomEllipse.setAttribute("stroke-width", "1");
+                svg.appendChild(bottomEllipse);
+              }
+
+              preview.appendChild(svg);
+            } else {
+              preview.style.backgroundColor = DEFAULT_NODE_COLOR;
+              preview.style.border = "1px solid var(--border)";
+              if (shape === "pill" || shape === "circle") {
+                preview.style.borderRadius = "9999px";
+              } else {
+                preview.style.borderRadius = "0px";
+              }
+            }
+
+            document.body.appendChild(preview);
+            event.dataTransfer.setDragImage(
+              preview,
+              SHAPE_DEFAULT_SIZES[shape].width / 2,
+              SHAPE_DEFAULT_SIZES[shape].height / 2,
+            );
+
+            const handleDragEnd = () => {
+              document.body.removeChild(preview);
+              (event.currentTarget as HTMLElement).removeEventListener(
+                "dragend",
+                handleDragEnd,
+              );
+            };
+            (event.currentTarget as HTMLElement).addEventListener(
+              "dragend",
+              handleDragEnd,
             );
           }}
         >
@@ -288,20 +392,336 @@ function CanvasNodeRenderer({
   data,
   width,
   height,
+  selected,
+  id,
 }: NodeProps<CanvasNode>) {
+  const { updateNodeData } = useReactFlow<CanvasNode, CanvasEdge>();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editLabel, setEditLabel] = useState(data.label);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const textColor = getNodeTextColor(data.color);
+  const nodeWidth = width ?? SHAPE_DEFAULT_SIZES[data.shape].width;
+  const nodeHeight = height ?? SHAPE_DEFAULT_SIZES[data.shape].height;
+  const borderColor = selected ? "var(--foreground)" : "var(--border)";
+  const borderWidth = selected ? 2 : 1;
+
+  // Focus textarea when entering edit mode
+  const handleDoubleClick = useCallback(() => {
+    setIsEditing(true);
+    setEditLabel(data.label);
+    setTimeout(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.select();
+    }, 0);
+  }, [data.label]);
+
+  // Close editing on blur
+  const handleBlur = useCallback(() => {
+    if (editLabel !== data.label) {
+      updateNodeData(id, { label: editLabel });
+    }
+    setIsEditing(false);
+  }, [editLabel, data.label, id, updateNodeData]);
+
+  // Close editing on Escape
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Escape") {
+        setIsEditing(false);
+        setEditLabel(data.label);
+      } else if (e.key === "Enter" && e.ctrlKey) {
+        handleBlur();
+      }
+    },
+    [data.label, handleBlur],
+  );
+
+  // Prevent text interactions from triggering canvas drag/pan
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLTextAreaElement>) => {
+      e.stopPropagation();
+    },
+    [],
+  );
+
+  const renderShape = () => {
+    switch (data.shape) {
+      case "rectangle":
+        return (
+          <div
+            className="flex h-full w-full items-center justify-center text-center text-sm font-medium leading-5"
+            style={{ color: textColor }}
+            onDoubleClick={handleDoubleClick}
+          >
+            {isEditing ? (
+              <textarea
+                ref={textareaRef}
+                value={editLabel}
+                onChange={(e) => setEditLabel(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                onPointerDown={handlePointerDown}
+                className="nodrag nopan absolute inset-0 resize-none bg-transparent text-center text-sm font-medium leading-5 outline-none"
+                style={{ color: textColor }}
+                placeholder="Label"
+              />
+            ) : (
+              <span className="px-2 py-1">{data.label || "Label"}</span>
+            )}
+          </div>
+        );
+      case "pill":
+        return (
+          <div
+            className="flex h-full w-full items-center justify-center rounded-full text-center text-sm font-medium leading-5"
+            style={{ color: textColor }}
+            onDoubleClick={handleDoubleClick}
+          >
+            {isEditing ? (
+              <textarea
+                ref={textareaRef}
+                value={editLabel}
+                onChange={(e) => setEditLabel(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                onPointerDown={handlePointerDown}
+                className="nodrag nopan w-4/5 resize-none bg-transparent text-center text-sm font-medium leading-5 outline-none"
+                style={{ color: textColor }}
+                placeholder="Label"
+              />
+            ) : (
+              <span className="px-2 py-1">{data.label || "Label"}</span>
+            )}
+          </div>
+        );
+      case "circle":
+        return (
+          <div
+            className="flex h-full w-full items-center justify-center rounded-full text-center text-sm font-medium leading-5"
+            style={{ color: textColor }}
+            onDoubleClick={handleDoubleClick}
+          >
+            {isEditing ? (
+              <textarea
+                ref={textareaRef}
+                value={editLabel}
+                onChange={(e) => setEditLabel(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                onPointerDown={handlePointerDown}
+                className="nodrag nopan h-4/5 w-4/5 resize-none bg-transparent text-center text-sm font-medium leading-5 outline-none"
+                style={{ color: textColor }}
+                placeholder="Label"
+              />
+            ) : (
+              <span className="px-2 py-1">{data.label || "Label"}</span>
+            )}
+          </div>
+        );
+      case "diamond":
+        return (
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <polygon
+              points="50,0 100,50 50,100 0,50"
+              fill={data.color}
+              stroke={borderColor}
+              strokeWidth={borderWidth}
+            />
+            <foreignObject x="10" y="25" width="80" height="50">
+              <div
+                className="flex h-full items-center justify-center text-center text-sm font-medium leading-5"
+                style={{ color: textColor }}
+                onDoubleClick={handleDoubleClick}
+              >
+                {isEditing ? (
+                  <textarea
+                    ref={textareaRef}
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    onPointerDown={handlePointerDown}
+                    className="nodrag nopan w-full resize-none bg-transparent text-center text-sm font-medium leading-5 outline-none"
+                    style={{ color: textColor }}
+                    placeholder="Label"
+                  />
+                ) : (
+                  <span className="px-1">{data.label || "Label"}</span>
+                )}
+              </div>
+            </foreignObject>
+          </svg>
+        );
+      case "hexagon":
+        return (
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <polygon
+              points="25,0 75,0 100,50 75,100 25,100 0,50"
+              fill={data.color}
+              stroke={borderColor}
+              strokeWidth={borderWidth}
+            />
+            <foreignObject x="15" y="25" width="70" height="50">
+              <div
+                className="flex h-full items-center justify-center text-center text-sm font-medium leading-5"
+                style={{ color: textColor }}
+                onDoubleClick={handleDoubleClick}
+              >
+                {isEditing ? (
+                  <textarea
+                    ref={textareaRef}
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    onPointerDown={handlePointerDown}
+                    className="nodrag nopan w-full resize-none bg-transparent text-center text-sm font-medium leading-5 outline-none"
+                    style={{ color: textColor }}
+                    placeholder="Label"
+                  />
+                ) : (
+                  <span className="px-1">{data.label || "Label"}</span>
+                )}
+              </div>
+            </foreignObject>
+          </svg>
+        );
+      case "cylinder":
+        return (
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            onDoubleClick={handleDoubleClick}
+          >
+            <rect x="0" y="15" width="100" height="70" fill={data.color} />
+            <line
+              x1="0"
+              y1="15"
+              x2="0"
+              y2="85"
+              stroke={borderColor}
+              strokeWidth="2"
+            />
+            <line
+              x1="100"
+              y1="15"
+              x2="100"
+              y2="85"
+              stroke={borderColor}
+              strokeWidth="2"
+            />
+            <ellipse
+              cx="50"
+              cy="85"
+              rx="50"
+              ry="15"
+              fill={data.color}
+              stroke={borderColor}
+              strokeWidth="2"
+            />
+            <ellipse
+              cx="50"
+              cy="15"
+              rx="50"
+              ry="15"
+              fill={data.color}
+              stroke={borderColor}
+              strokeWidth="2"
+            />
+            <foreignObject x="15" y="35" width="70" height="30">
+              <div
+                className="flex h-full items-center justify-center text-center text-sm font-medium leading-5"
+                style={{ color: textColor }}
+              >
+                {isEditing ? (
+                  <textarea
+                    ref={textareaRef}
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    onPointerDown={handlePointerDown}
+                    className="nodrag nopan w-full resize-none bg-transparent text-center text-sm font-medium leading-5 outline-none"
+                    style={{ color: textColor }}
+                    placeholder="Label"
+                  />
+                ) : (
+                  <span className="px-1">{data.label || "Label"}</span>
+                )}
+              </div>
+            </foreignObject>
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getBorderRadius = () => {
+    switch (data.shape) {
+      case "rectangle":
+        return "0px";
+      case "pill":
+      case "circle":
+        return "9999px";
+      default:
+        return "0px";
+    }
+  };
+
+  const isCssShape = ["rectangle", "pill", "circle"].includes(data.shape);
 
   return (
     <div
-      className="group relative flex items-center justify-center rounded-xl border border-border px-4 text-center text-sm font-medium leading-5 shadow-lg shadow-background/40"
+      className="group relative shadow-lg shadow-background/40"
       style={{
-        width: width ?? SHAPE_DEFAULT_SIZES[data.shape].width,
-        height: height ?? SHAPE_DEFAULT_SIZES[data.shape].height,
-        backgroundColor: data.color,
-        color: textColor,
+        width: nodeWidth,
+        height: nodeHeight,
+        borderRadius: isCssShape ? getBorderRadius() : undefined,
+        border: `${borderWidth}px solid ${borderColor}`,
+        backgroundColor: isCssShape ? data.color : undefined,
+        overflow: "visible",
       }}
     >
-      {data.label}
+      <NodeResizer
+        isVisible={selected}
+        minWidth={MIN_NODE_SIZE.width}
+        minHeight={MIN_NODE_SIZE.height}
+        color="var(--foreground)"
+        handleStyle={{
+          width: 12,
+          height: 12,
+          border: "1px solid var(--background)",
+          backgroundColor: "var(--foreground)",
+        }}
+        lineStyle={{
+          borderColor: "var(--foreground)",
+        }}
+      />
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+          borderRadius: isCssShape ? getBorderRadius() : undefined,
+        }}
+      >
+        {renderShape()}
+      </div>
+
       <NodeHandle position={Position.Top} />
       <NodeHandle position={Position.Right} />
       <NodeHandle position={Position.Bottom} />
